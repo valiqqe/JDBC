@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.sql.PreparedStatement;
 
 public class DatabaseQueryService {
     public List<MaxProjectCountClient> findMaxProjectsClient() {
@@ -27,8 +28,8 @@ public class DatabaseQueryService {
             Database database = Database.getInstance();
             Connection connection = database.getConnection();
 
-            try (Statement statement = connection.createStatement()) {
-                ResultSet resultSet = statement.executeQuery(sql);
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                ResultSet resultSet = statement.executeQuery();
                 List<MaxProjectCountClient> clients = new ArrayList<>();
 
                 while (resultSet.next()) {
@@ -57,94 +58,114 @@ public class DatabaseQueryService {
         }
     }
 
-    public List<LongestProject> findLongestProject() {
+
+   public List<LongestProject> findLongestProject() {
+        String filePath = "/Users/valentindidok/IdeaProjects/JDBC/src/main/resources/find_longest_project.sql";
+
         try {
-            String sql = readSqlFile("/Users/valentindidok/IdeaProjects/JDBC/src/main/resources/find_longest_project.sql");
+            String sql = readSqlFile(filePath);
             Database database = Database.getInstance();
             Connection connection = database.getConnection();
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sql);
-            List<LongestProject> projects = new ArrayList<>();
 
-            while (resultSet.next()) {
-                int id = resultSet.getInt("id");
-                int monthCount = resultSet.getInt("MONTH_COUNT");
-                LongestProject project = new LongestProject(id, monthCount);
-                projects.add(project);
+            try (PreparedStatement statement = connection.prepareStatement(sql);
+                 ResultSet resultSet = statement.executeQuery()) {
+                List<LongestProject> projects = new ArrayList<>();
+
+                while (resultSet.next()) {
+                    int id = resultSet.getInt("id");
+                    int monthCount = resultSet.getInt("MONTH_COUNT");
+                    LongestProject project = new LongestProject(id, monthCount);
+                    projects.add(project);
+                }
+
+                for (LongestProject project : projects) {
+                    System.out.println("ID: " + project.getId());
+                    System.out.println("Month Count: " + project.getMonthCount());
+                    System.out.println();
+                }
+
+                return projects;
             }
 
-            for (LongestProject project : projects) {
-                System.out.println("ID: " + project.getId());
-                System.out.println("Month Count: " + project.getMonthCount());
-                System.out.println();
-            }
-
-            return projects;
         } catch (IOException | SQLException e) {
             e.printStackTrace();
         }
 
         return Collections.emptyList();
     }
+
 
 
 
     public List<Worker> findYoungestAndEldestWorkers() {
+        String filePath = "/Users/valentindidok/IdeaProjects/JDBC/src/main/resources/find_youngest_eldest_workers.sql";
+
         try {
-            String sql = readSqlFile("/Users/valentindidok/IdeaProjects/JDBC/src/main/resources/find_youngest_eldest_workers.sql");
+            String sql = readSqlFile(filePath);
             Database database = Database.getInstance();
             Connection connection = database.getConnection();
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sql);
-            List<Worker> workers = new ArrayList<>();
 
-            while (resultSet.next()) {
-                String type = resultSet.getString("TYPE");
-                String name = resultSet.getString("NAME");
-                String birthday = resultSet.getString("BIRTHDAY");
-                Worker worker = new Worker(type, name, birthday);
-                workers.add(worker);
+            try (PreparedStatement statement = connection.prepareStatement(sql);
+                 ResultSet resultSet = statement.executeQuery()) {
+
+                List<Worker> workers = new ArrayList<>();
+
+                while (resultSet.next()) {
+                    String type = resultSet.getString("TYPE");
+                    String name = resultSet.getString("NAME");
+                    String birthday = resultSet.getString("BIRTHDAY");
+                    Worker worker = new Worker(type, name, birthday);
+                    workers.add(worker);
+                }
+
+                for (Worker worker : workers) {
+                    System.out.println("Type: " + worker.getType());
+                    System.out.println("Name: " + worker.getName());
+                    System.out.println("Birthday: " + worker.getBirthday());
+                    System.out.println();
+                }
+
+                return workers;
+
             }
-
-            for (Worker worker : workers) {
-                System.out.println("Type: " + worker.getType());
-                System.out.println("Name: " + worker.getName());
-                System.out.println("Birthday: " + worker.getBirthday());
-                System.out.println();
-            }
-
-            return workers;
 
         } catch (IOException | SQLException e) {
             e.printStackTrace();
         }
         return Collections.emptyList();
     }
+
 
     public List<Worker> findMaxSalaryWorker() {
+        String filePath = "/Users/valentindidok/IdeaProjects/JDBC/src/main/resources/find_max_salary_worker.sql";
+
         try {
-            String sql = readSqlFile("/Users/valentindidok/IdeaProjects/JDBC/src/main/resources/find_max_salary_worker.sql");
+            String sql = readSqlFile(filePath);
             Database database = Database.getInstance();
             Connection connection = database.getConnection();
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sql);
-            List<Worker> workers = new ArrayList<>();
 
-            if (resultSet.next()) {
-                String name = resultSet.getString("NAME");
-                double salary = resultSet.getDouble("SALARY");
+            try (PreparedStatement statement = connection.prepareStatement(sql);
+                 ResultSet resultSet = statement.executeQuery()) {
 
-                Worker worker = new Worker(name, salary);
-                workers.add(worker);
+                List<Worker> workers = new ArrayList<>();
+
+                while (resultSet.next()) {
+                    String name = resultSet.getString("NAME");
+                    double salary = resultSet.getDouble("SALARY");
+
+                    Worker worker = new Worker(name, salary);
+                    workers.add(worker);
+                }
+
+                for (Worker worker : workers) {
+                    System.out.println("Name: " + worker.getName());
+                    System.out.println("Salary: " + worker.getSalary());
+                    System.out.println();
+                }
+
+                return workers;
+
             }
-
-            for (Worker worker : workers) {
-                System.out.println("Name: " + worker.getName());
-                System.out.println("Salary: " + worker.getSalary());
-                System.out.println();
-            }
-
-            return workers;
 
         } catch (IOException | SQLException e) {
             e.printStackTrace();
@@ -152,6 +173,7 @@ public class DatabaseQueryService {
 
         return Collections.emptyList();
     }
+
 
 
     public List<ProjectPrice> printProjectPrices() {
